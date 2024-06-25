@@ -131,13 +131,42 @@ void Costmap2DClient::updateFullMap(const nav_msgs::OccupancyGrid::ConstPtr& msg
   auto* mutex = costmap_.getMutex();
   std::lock_guard<costmap_2d::Costmap2D::mutex_t> lock(*mutex);
 
+  // Get the robot's current position
+  geometry_msgs::Pose robot_pose = getRobotPose();
+  double robot_x = robot_pose.position.x;
+  double robot_y = robot_pose.position.y;
+
+  // Calculate the boundaries of the 5mx5m area
+  double half_size = 4; // half of 5m
+  double min_x = robot_x - half_size;
+  double max_x = robot_x + half_size;
+  double min_y = robot_y - half_size;
+  double max_y = robot_y + half_size;
+
+  unsigned int min_mx, min_my, max_mx, max_my;
+  costmap_.worldToMap(min_x, min_y, min_mx, min_my);
+  costmap_.worldToMap(max_x, max_y, max_mx, max_my);
+
+
   // fill map with data
   unsigned char* costmap_data = costmap_.getCharMap();
   size_t costmap_size = costmap_.getSizeInCellsX() * costmap_.getSizeInCellsY();
   ROS_DEBUG("full map update, %lu values", costmap_size);
   for (size_t i = 0; i < costmap_size && i < msg->data.size(); ++i) {
     unsigned char cell_cost = static_cast<unsigned char>(msg->data[i]);
-    costmap_data[i] = cost_translation_table__[cell_cost];
+    // costmap_data[i] = cost_translation_table__[cell_cost];
+    // Convert map coordinates to world coordinates
+    unsigned int x = i % size_in_cells_x;
+    unsigned int y = i / size_in_cells_x;
+    double world_x, world_y;
+    costmap_.mapToWorld(x, y, world_x, world_y);
+
+    // Check if the cell is within the 5mx5m area
+    if (world_x >= min_x && world_x <= max_x && world_y >= min_y && world_y <= max_y) {
+        costmap_data[i] = cost_translation_table__[cell_cost];
+    } else {
+        costmap_data[i] = 254; // Assign "0" to cells outside the 5mx5m area
+    }
   }
   ROS_DEBUG("map updated, written %lu values", costmap_size);
 }
@@ -175,13 +204,39 @@ void Costmap2DClient::updatePartialMap(
   }
 
   // update map with data
+  // Get the robot's current position
+  geometry_msgs::Pose robot_pose = getRobotPose();
+  double robot_x = robot_pose.position.x;
+  double robot_y = robot_pose.position.y;
+
+  // Calculate the boundaries of the 5mx5m area
+  double half_size = 4; // half of 5m
+  double min_x = robot_x - half_size;
+  double max_x = robot_x + half_size;
+  double min_y = robot_y - half_size;
+  double max_y = robot_y + half_size;
+
+  unsigned int min_mx, min_my, max_mx, max_my;
+  costmap_.worldToMap(min_x, min_y, min_mx, min_my);
+  costmap_.worldToMap(max_x, max_y, max_mx, max_my);
+
   unsigned char* costmap_data = costmap_.getCharMap();
   size_t i = 0;
   for (size_t y = y0; y < yn && y < costmap_yn; ++y) {
     for (size_t x = x0; x < xn && x < costmap_xn; ++x) {
       size_t idx = costmap_.getIndex(x, y);
       unsigned char cell_cost = static_cast<unsigned char>(msg->data[i]);
-      costmap_data[idx] = cost_translation_table__[cell_cost];
+      // costmap_data[idx] = cost_translation_table__[cell_cost];
+      // Convert map coordinates to world coordinates
+      double world_x, world_y;
+      costmap_.mapToWorld(x, y, world_x, world_y);
+
+      // Check if the cell is within the 5mx5m area
+      if (world_x >= min_x && world_x <= max_x && world_y >= min_y && world_y <= max_y) {
+          costmap_data[idx] = cost_translation_table__[cell_cost];
+      } else {
+          costmap_data[idx] = 254; // Assign "0" to cells outside the 5mx5m area
+      }
       ++i;
     }
   }
