@@ -59,9 +59,31 @@ std::vector<Frontier> FrontierSearch::searchFrom(geometry_msgs::Point position)
   }
   visited_flag[bfs.front()] = true;
 
+  // Calculate the map boundaries for the 5mx5m area
+  double half_size = 0.5; // half of 5m
+  double min_x = position.x - half_size;
+  double max_x = position.x + half_size;
+  double min_y = position.y - half_size;
+  double max_y = position.y + half_size;
+
+  unsigned int min_mx, min_my, max_mx, max_my;
+  costmap_->worldToMap(min_x, min_y, min_mx, min_my);
+  costmap_->worldToMap(max_x, max_y, max_mx, max_my);
+
   while (!bfs.empty()) {
     unsigned int idx = bfs.front();
     bfs.pop();
+
+    // // Get the world coordinates of the current cell
+    // unsigned int current_mx, current_my;
+    // costmap_->indexToCells(idx, current_mx, current_my);
+    // double current_x, current_y;
+    // costmap_->mapToWorld(current_mx, current_my, current_x, current_y);
+
+    // // Check if the cell is within the 5mx5m boundary
+    // if (current_x < min_x || current_x > max_x || current_y < min_y || current_y > max_y) {
+    //     continue;
+    // }
 
     // iterate over 4-connected neighbourhood
     for (unsigned nbr : nhood4(idx, *costmap_)) {
