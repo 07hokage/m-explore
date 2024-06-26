@@ -42,6 +42,7 @@
 
 namespace explore
 {
+double submap_size;
 // static translation table to speed things up
 std::array<unsigned char, 256> init_translation_table();
 static const std::array<unsigned char, 256> cost_translation_table__ =
@@ -55,7 +56,7 @@ Costmap2DClient::Costmap2DClient(ros::NodeHandle& param_nh,
   std::string costmap_topic;
   std::string footprint_topic;
   std::string costmap_updates_topic;
-  std::int submap_size;
+
   param_nh.param("costmap_topic", costmap_topic, std::string("costmap"));
   param_nh.param("costmap_updates_topic", costmap_updates_topic,
                  std::string("costmap_updates"));
@@ -65,7 +66,7 @@ Costmap2DClient::Costmap2DClient(ros::NodeHandle& param_nh,
   param_nh.param("transform_tolerance", transform_tolerance_, 0.3);
 
   // read the submap size from launch file
-  param_nh.param("submap_size", submap_size, 8)
+  param_nh.param("submap_size", submap_size, 8.0);
 
   /* initialize costmap */
   costmap_sub_ = subscription_nh.subscribe<nav_msgs::OccupancyGrid>(
@@ -214,7 +215,7 @@ void Costmap2DClient::updatePartialMap(
   double robot_y = robot_pose.position.y;
 
   // Calculate the boundaries of the 5mx5m area
-  double half_size = 4; // half of 5m
+  double half_size = submap_size/2; // half of 5m
   double min_x = robot_x - half_size;
   double max_x = robot_x + half_size;
   double min_y = robot_y - half_size;
