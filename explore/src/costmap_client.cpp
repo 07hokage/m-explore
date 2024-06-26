@@ -40,6 +40,16 @@
 #include <mutex>
 #include <string>
 
+
+#include <dynamic_reconfigure/server.h>
+#include <explore_lite/SubmapSizeConfig.h>
+
+void dynamicReconfigureCallback(explore_lite::SubmapSizeConfig &config, uint32_t level) {
+    // submap_size = config.sub
+    // TODO: Initialize dynamic reconfigure server here so it reads the updated value set by the submap_config_node 
+    submap_size = 1
+}
+
 namespace explore
 {
 double submap_size;
@@ -91,6 +101,8 @@ Costmap2DClient::Costmap2DClient(ros::NodeHandle& param_nh,
   /* resolve tf prefix for robot_base_frame */
   std::string tf_prefix = tf::getPrefixParam(param_nh);
   robot_base_frame_ = tf::resolve(tf_prefix, robot_base_frame_);
+
+ 
 
   // we need to make sure that the transform between the robot base frame and
   // the global frame is available
