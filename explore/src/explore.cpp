@@ -288,7 +288,8 @@ void Explore::start()
 void Explore::stop()
 {
   move_base_client_.cancelAllGoals();
-  exploring_timer_.stop();
+  // TODO: check timer condition
+  // exploring_timer_.stop();
   ROS_INFO("Exploration stopped.");
 }
 
