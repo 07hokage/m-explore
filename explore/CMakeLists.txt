@@ -3,6 +3,7 @@ project(explore_lite)
 
 ## Find catkin macros and libraries
 find_package(catkin REQUIRED COMPONENTS
+  dynamic_reconfigure
   actionlib
   actionlib_msgs
   costmap_2d
@@ -15,6 +16,8 @@ find_package(catkin REQUIRED COMPONENTS
   tf
   visualization_msgs
 )
+
+generate_dynamic_reconfigure_options(cfg/SubmapSize.cfg)
 
 ###################################
 ## catkin specific configuration ##
@@ -34,6 +37,8 @@ catkin_package(
     visualization_msgs
 )
 
+
+
 ###########
 ## Build ##
 ###########
@@ -43,9 +48,11 @@ set(CMAKE_CXX_EXTENSIONS OFF)
 
 ## Specify additional locations of header files
 include_directories(
+  ${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake
   ${catkin_INCLUDE_DIRS}
   include
 )
+
 
 add_executable(explore
   src/costmap_client.cpp
@@ -54,6 +61,11 @@ add_executable(explore
 )
 add_dependencies(explore ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS})
 target_link_libraries(explore ${catkin_LIBRARIES})
+
+# Add the submap_reconfig_node executable
+add_executable(submap_reconfig_node src/submap_reconfig_node.cpp)
+add_dependencies(submap_reconfig_node ${${PROJECT_NAME}_EXPORTED_TARGETS} ${catkin_EXPORTED_TARGETS} ${PROJECT_NAME}_gencfg)
+target_link_libraries(submap_reconfig_node ${catkin_LIBRARIES})
 
 #############
 ## Install ##
