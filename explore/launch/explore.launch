@@ -13,8 +13,8 @@
   <param name="min_frontier_size" value="0.75"/>
   <param name="local_frontier_filter_radius" value="4.0"/>
   <param name="min_local_frontiers" value="2.0"/>
-  <param name="min_global_frontiers" value="30.0"/>
+  <param name="min_global_frontiers" value="1.0"/>
   <param name="global_frontier_filter_radius" value="15.0"/>
-  <param name="min_frontier_spacing" value="2.0"/>
+  <param name="min_frontier_spacing" value="1.0"/>
 </node>
 </launch>
